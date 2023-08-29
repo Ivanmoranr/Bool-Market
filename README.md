@@ -141,7 +141,7 @@ When this pattern occurs at the bottom of a downtrend near the support level, it
 ![Evening_star](images/candlesticks/evening_star.png)
 **Characterised by:** A first, bullish candle.
 This is followed by a small candle which can be bullish, bearish, Doji, or any other.
-The third candle is a large, bearish candle. 
+The third candle is a large, bearish candle.
 
 **Signifies:** The first candle indicates that bulls are still pushing the market higher.
 The second candle shows that buyers are in control, but they are not as powerful as they were.
@@ -167,7 +167,7 @@ The third candle shows that the buyer's domination is over, and a possible beari
 
 ### Three Black Crows
 ![Three_black_crows](images/candlesticks/three_black_crows.png)
-**Characterised by:** Three consecutive bearish candles at the end of a bullish trend. 
+**Characterised by:** Three consecutive bearish candles at the end of a bullish trend.
 
 **Signifies:** A shift in control from the bulls to the bears.
 
@@ -196,3 +196,33 @@ A fifth candle must be a long candle which closes within the body gap of the fir
 **Bearish Logic:** ABS(C4 - O4) > .5 * (H4 - L4) AND C4 > O4 AND C3 > O3 AND L3 > H4 AND C2 > C3 AND C1 > C2 AND C < O AND L < H4 AND H > L3
 
 **Bullish Logic:** C4 < O4 AND 2 * ABS(C4 - O4) > H4 - L4 AND C3 < O3 AND H3 < L4 AND C2 < C3 AND C1 < C2 AND 5 * ABS(C - O) > 3 * (H - L) AND C > O AND C > H3
+
+# Usage
+* create a virtual environment named `bool`
+```bash
+pyenv virtualenv bool
+```
+
+* install dependencies (inside project dir):
+```bash
+pip install -r requirements.txt
+```
+
+* install TA-Lib:
+  * Download [ta-lib-0.4.0-src.tar.gz](http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz) into WSL's root (~)
+  * run:
+```bash
+tar -xzf ta-lib-0.4.0-src.tar.gz
+cd ta-lib/
+./configure --prefix=/usr
+make
+sudo make install
+```
+then, inside project dir (with environment activated):
+```bash
+pip install -r requirements-extra.txt
+```
+
+
+
+# References
