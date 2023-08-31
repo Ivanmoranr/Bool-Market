@@ -186,7 +186,7 @@ The third candle shows that the buyer's domination is over, and a possible beari
 
 
 ### Bearish / Bullish Breakaway
-![Three_white_soldiers](images/candlesticks/breakaway.jpeg)
+![Breakaway](images/candlesticks/breakaway.jpg)
 **Characterised by:** A first, long candle.
 A second, third and fourth candle which must be spinning tops.
 A fifth candle must be a long candle which closes within the body gap of the first two candles.
@@ -196,6 +196,56 @@ A fifth candle must be a long candle which closes within the body gap of the fir
 **Bearish Logic:** ABS(C4 - O4) > .5 * (H4 - L4) AND C4 > O4 AND C3 > O3 AND L3 > H4 AND C2 > C3 AND C1 > C2 AND C < O AND L < H4 AND H > L3
 
 **Bullish Logic:** C4 < O4 AND 2 * ABS(C4 - O4) > H4 - L4 AND C3 < O3 AND H3 < L4 AND C2 < C3 AND C1 < C2 AND 5 * ABS(C - O) > 3 * (H - L) AND C > O AND C > H3
+
+## Chart Patterns
+
+### Bearish/Bullish flag
+![Flag_Pattern](images/charts/bullish-and-bearish.webp)
+**Characterised by:** Consists of the flagpole and a flag. As such, it resembles a flag on a pole. It's constituted after the price action trades in a continuous uptrend, making the higher highs and higher lows in the bulish one and the reverse in the bearish pattern
+
+**Signifies:**  The flag pattern is used to identify the possible continuation of a previous trend from a point at which price has drifted against that same trend. Should the trend resume, the price increase could be rapid, making the timing of a trade advantageous by noticing the flag pattern.
+
+### Bearish/Bullish Pennant
+![Pennant_Pattern](images/charts/pennant.png)
+**Characterised by:** A pennant is a type of continuation pattern formed when there is a large movement in a security, known as the flagpole, followed by a consolidation period with converging trend lines—the pennant—
+
+**Signifies:**  It represents the second half of the flagpole as a continuation of the trend that it had before the consolidation of the price
+
+### Ascending/descending triangle
+![Triangle_Pattern](images/charts/asc-desc-triangle.webp)
+**Characterised by:**  It is created by price moves that allow for a horizontal line to be drawn along the swing highs and a rising trendline to be drawn along the swing lows. The two lines form a triangle. And the reverse happens in the descending
+
+**Signifies:** This are called continuation patterns since price will typically break out in the same direction as the trend that was in place just prior to the triangle forming.
+
+### Cup with handle
+![Cup_with_handle_Pattern](images/charts/cup.png)
+**Characterised by:** Is a technical indicator that resembles a cup with a handle, where the cup is in the shape of a "u" and the handle has a slight downward drift.
+
+**Signifies:** The cup and handle is considered a bullish signal, with the right-hand side of the pattern typically experiencing lower trading volume.
+
+### Double top/bottom
+![Double_top/bottom_pattern](images/charts/top.png)
+**Characterised by:** They occur when the underlying investment moves in a similar pattern to the letter "W" (double bottom) or "M" (double top).
+
+**Signifies:** A double top indicates a bearish reversal in trend. A double bottom is a signal for a bullish price movement.
+
+### Head and shoudlers
+![Head_&_shoulders](images/charts/HSpattern.png)
+**Characterised by:** The pattern appears as a baseline with three peaks, where the outside two are close in height, and the middle is highest.
+
+**Signifies:** It is a specific chart formation that predicts a trend reversal.
+
+### Falling and rising wedge
+![Wedge](images/charts/wedge.png)
+**Characterised by:** Is marked by converging trend lines on a price chart. The two trend lines are drawn to connect the respective highs and lows that are either rising or falling at differing rates, giving the appearance of a wedge.
+
+**Signifies:** Wedge shaped trend lines are considered useful indicators of a potential reversal in price action by technical analysts.
+
+### Triple top/bottom
+![Triple_top/bottom](images/charts/triple.png)
+**Characterised by:** A triple top is formed by three peaks moving into the same area, with pullbacks in between, while a triple bottom consists of three troughs with rallies in the middle.
+
+**Signifies:** While not often observed, triple tops and bottoms provide compelling signal for trend reversals.
 
 # Usage
 * create a virtual environment named `bool`
