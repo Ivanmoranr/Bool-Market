@@ -8,3 +8,7 @@ matplotlib
 seaborn
 scikit-learn
 yfinance
+datetime
+plotly
+statsmodels
+ipywidgets
