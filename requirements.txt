@@ -9,7 +9,11 @@ seaborn
 scikit-learn
 yfinance
 datetime
-plotly
+plotly==5.16.1
 statsmodels
 ipywidgets
 tensorflow
+
+scipy==1.11.2
+
+
