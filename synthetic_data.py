@@ -242,15 +242,20 @@ def get_noise(X, y, l=round(0.4*50), synth=True, real=True):
 
     return X,y
 
-def get_hack_noise(X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom, synth=True, real=True):
+def get_hack_noise(X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom, synth=True, real=True, f=True):
     amount={"rising_wedge":556,
         "falling_wedge":268,
         "double_top": 393,
         "double_bottom": 348}
 
-    X_rw_noise, y_rw_noise = get_noise(X_ris_wedg, y_ris_wedg, l=round(amount["rising_wedge"]*0.4), synth=synth, real=real)
-    X_fw_noise, y_fw_noise = get_noise(X_fal_wedg, y_fal_wedg, l=round(amount["falling_wedge"]*0.4), synth=synth, real=real)
-    X_dt_noise, y_dt_noise = get_noise(X_d_top, y_d_top, l=round(amount["double_top"]*0.4), synth=synth, real=real)
-    X_db_noise, y_db_noise = get_noise(X_d_bottom, y_d_bottom, l=round(amount["double_bottom"]*0.4), synth=synth, real=real)
+    if f:
+        m=0.4
+    else:
+        m=1
+
+    X_rw_noise, y_rw_noise = get_noise(X_ris_wedg, y_ris_wedg, l=round(amount["rising_wedge"]*m), synth=synth, real=real)
+    X_fw_noise, y_fw_noise = get_noise(X_fal_wedg, y_fal_wedg, l=round(amount["falling_wedge"]*m), synth=synth, real=real)
+    X_dt_noise, y_dt_noise = get_noise(X_d_top, y_d_top, l=round(amount["double_top"]*m), synth=synth, real=real)
+    X_db_noise, y_db_noise = get_noise(X_d_bottom, y_d_bottom, l=round(amount["double_bottom"]*m), synth=synth, real=real)
 
     return X_rw_noise, y_rw_noise, X_fw_noise, y_fw_noise, X_dt_noise, y_dt_noise, X_db_noise, y_db_noise
