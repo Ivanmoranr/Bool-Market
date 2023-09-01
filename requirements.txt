@@ -12,3 +12,4 @@ datetime
 plotly
 statsmodels
 ipywidgets
+tensorflow

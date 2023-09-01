@@ -133,7 +133,7 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 y.append((start, end, pat[pattern]))
 
             if pattern == "falling_wedge":
-                m= np.random.randint(0,10)
+                m= np.random.randint(0,3)
                 m = str(m)
                 func={"0":bearish_flag(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2=0),
             "1":bearish_pennant(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
@@ -148,7 +148,7 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 y.append((start, end, pat[pattern]))
 
             if pattern == "double_top":
-                m= np.random.randint(0,10)
+                m= np.random.randint(0,2)
                 m = str(m)
                 func={
             "0":head_shoulders(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
@@ -163,7 +163,7 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 y.append((start, end, pat[pattern]))
 
             if pattern == "double_bottom":
-                m= np.random.randint(0,10)
+                m= np.random.randint(0,2)
                 m = str(m)
                 func={
             "0":inv_head_shoulders(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
@@ -220,8 +220,13 @@ def get_noise(X, y, l=round(0.4*50), synth=True, real=True):
         end = np.array(y)[:,1]+round(len(np.array(y))*0.3)
         pattern = np.array(y)[:,2] - y[0][2]
         y = list(np.column_stack((start, end, pattern)))
-
+        if synth:
+            num = round(len(X)/2)
+            X = X[:num]
+            y = y[:num]
     if synth:
+        if real:
+            l=num
 
         for i in range(l):
 
@@ -231,10 +236,21 @@ def get_noise(X, y, l=round(0.4*50), synth=True, real=True):
             low = np.array(low)
             close = np.array(close)
             X.append(np.column_stack((ope, hig, low, close)))
-            start=np.random.randint(10,round(500/2))
-            end=np.random.randint(start,start+round(500/2))
+            start=np.random.randint(10,400)
+            end=np.random.randint(start,500)
             y.append((start,end,0))
 
-
-
     return X,y
+
+def get_hack_noise(X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom, synth=True, real=True):
+    amount={"rising_wedge":556,
+        "falling_wedge":268,
+        "double_top": 393,
+        "double_bottom": 348}
+
+    X_rw_noise, y_rw_noise = get_noise(X_ris_wedg, y_ris_wedg, l=round(amount["rising_wedge"]*0.4), synth=synth, real=real)
+    X_fw_noise, y_fw_noise = get_noise(X_fal_wedg, y_fal_wedg, l=round(amount["falling_wedge"]*0.4), synth=synth, real=real)
+    X_dt_noise, y_dt_noise = get_noise(X_d_top, y_d_top, l=round(amount["double_top"]*0.4), synth=synth, real=real)
+    X_db_noise, y_db_noise = get_noise(X_d_bottom, y_d_bottom, l=round(amount["double_bottom"]*0.4), synth=synth, real=real)
+
+    return X_rw_noise, y_rw_noise, X_fw_noise, y_fw_noise, X_dt_noise, y_dt_noise, X_db_noise, y_db_noise
