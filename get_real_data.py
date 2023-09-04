@@ -96,3 +96,69 @@ def get_up_down(patterns=["uptrend","downtrend"]):
                     y2.append(tuple(df.iloc[0][["Start Date", "End Date", "Pattern"]]))
 
     return X1, y1, X2, y2
+
+def data_augmentation(X1, y1):
+    x_1=[]
+    y_1=[]
+    for i in range(len(X1)):
+        x_1.append(X1[i][:y1[i][0]])
+        y_1.append((-1,-1,0))
+    for i in range(len(X1)):
+        x_1.append(X1[i][y1[i][1]:])
+        y_1.append((-1,-1,0))
+    for i in range(len(X1)):
+        for i in range(10):
+            num = np.random.randint(0,round(y1[i][0]/3))
+            num_2 = np.random.randint(0,round(y1[i][0]/3))
+            x_1.append(X1[i][(y1[i][0]-num):(y1[i][1]+num_2)])
+            y_1.append((num, num_2+y1[i][1], y1[i][2]))
+    return x_1, y_1
+
+def upside_down(x_1, y_1):
+    X_1=[]
+    Y_1=[]
+    pat={"rising_wedge":1,
+            "falling_wedge":2,
+            "double_top":3,
+            "double_bottom":4
+        }
+
+    for i in range(len(x_1)):
+        if y_1[i][2] != 0:
+            if y_1[i][2] == 1:
+                num=2
+            elif y_1[i][2] == 2:
+                num=1
+            elif y_1[i][2] == 3:
+                num=4
+            elif y_1[i][2] == 4:
+                num=3
+            l = x_1[i] - np.max(x_1[i][y_1[i][0]:y_1[i][1]])
+            o = -l
+            X_1.append(o)
+            Y_1.append((y_1[i][0], y_1[i][1], num))
+
+    return X_1, Y_1
+
+def augmentation(X1, y1, X2, y2, X3, y3, X4, y4):
+    x_1, y_1 = data_augmentation(X1, y1)
+    x_2, y_2 = data_augmentation(X2, y2)
+    x_3, y_3 = data_augmentation(X3, y3)
+    x_4, y_4 = data_augmentation(X4, y4)
+
+    X_2, Y_2 = upside_down(x_1, y_1)
+    X_1, Y_1 = upside_down(x_2, y_2)
+    X_4, Y_4 = upside_down(x_3, y_3)
+    X_3, Y_3 = upside_down(x_4, y_4)
+
+    X1 = x_1+X_1
+    X2 = x_2+X_2
+    X3 = x_3+X_3
+    X4 = x_4+X_4
+
+    y1 = y_1 + Y_1
+    y2 = y_2 + Y_2
+    y3 = y_3 + Y_3
+    y4 = y_4 + Y_4
+
+    return X1, y1, X2, y2, X3, y3, X4, y4
