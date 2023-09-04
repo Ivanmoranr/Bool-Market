@@ -1,6 +1,9 @@
 import os
 import pandas as pd
 import numpy as np
+from pathlib import Path
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from synthetic_data import *
 
 
 def extract_info(filename):
@@ -74,12 +77,14 @@ def preprocess_csv(filename):
         df['Start Date'] = -1
         df['End Date'] = -1
         df['Pattern'] = 0
+        df['Pattern Present'] = 0
         df['Date'] = pd.to_datetime(df['Date'])
     else:
     
         df['Start Date'] = start
         df['End Date'] = end
         df['Pattern'] = pattern
+        df['Pattern Present'] = 1
     
         df['Date'] = pd.to_datetime(df['Date'])
         df['Start Date'] = pd.to_datetime(df['Start Date'])
@@ -116,3 +121,85 @@ def extract_file_list():
         for folder in dirs:
             pattern_list.append(folder)
     return pattern_list[:-2]
+
+
+def real_data_pattern(pattern, model_type):
+    """
+    Takes a pattern name and returns X and y
+    model_type: categorise(pattern present or not) or full(pattern location detection)
+    """
+    DATA_PATH_ = Path(f"data/patterns/{pattern}")
+    DATA_PATH_.exists()
+
+    data = {filepath.stem: pd.read_csv(filepath) for filepath in DATA_PATH_.glob("*.csv")}
+
+    X_real = []
+    y_real = []
+    
+    if model_type == "full":
+        for key, df in data.items():
+            X_real.append(df[['Open', 'High', 'Low', 'Close']].values)
+            y_real.append(df.loc[0, ['Start Date', 'End Date', 'Pattern']].values)
+            
+    elif model_type == 'categorise':
+        for key, df in data.items():
+            X_real.append(df[['Open', 'High', 'Low', 'Close']].values)
+            y_real.append(df.loc[0, ['Pattern Present']].values)
+
+    return X_real, y_real
+
+
+def synthetic_data(X_real, pattern, model_type):
+    """Takes the real X data and pattern and returns the required amount of synthetic data"""
+    amount_40 = int(len(X_real) * 0.4)
+
+    X_synthetic, y_synthetic = gen_x_y(l=amount_40, pattern=pattern, noise=True, general=False, model_type=model_type)
+
+    return X_synthetic, y_synthetic
+
+
+def real_data_no_pattern(X_real, pattern, model_type):
+    """Takes the real X data and pattern being tested and returns 25% of the real data with no pattern"""
+
+    patterns_dict = {
+        "rising_wedge": 'downtrend',
+        "falling_wedge": 'uptrend',
+        "double_top": 'support',
+        "double_bottom": 'support'
+    }
+
+    amount_25 = int(len(X_real) * 0.25)
+
+    pattern_type = patterns_dict.get(pattern, pattern)
+
+    DATA_PATH = Path(f"data/patterns/{pattern_type}")
+    
+    if DATA_PATH.exists():
+        data = {filepath.stem: pd.read_csv(filepath) for filepath in DATA_PATH.glob("*.csv")}
+        
+        data = {key: df[:amount_25] for key, df in data.items()}
+
+        X_no_pattern = []
+        y_no_pattern = []
+
+        if model_type == 'full':
+            for key, df in data.items():
+                X_no_pattern.append(df[['Open', 'High', 'Low', 'Close']].values)
+                y_no_pattern.append(df.loc[0, ['Start Date', 'End Date', 'Pattern']].values)
+            
+        elif model_type == 'categorise':
+            for key, df in data.items():
+                X_no_pattern.append(df[['Open', 'High', 'Low', 'Close']].values)
+                y_no_pattern.append(df.loc[0, ['Pattern Present']].values)
+    
+    return X_no_pattern, y_no_pattern
+
+
+def join_data(real_pattern, synthetic, real_no_pattern):
+    """Takes all data and returns a combined list of arrays"""
+    return real_pattern + synthetic + real_no_pattern
+
+
+def pad_arrays(X, dtype='float32', padding='post', value=-100):
+    """Takes a list of arrays and pads to the minimum required length"""
+    return pad_sequences(X, dtype=dtype, padding=padding, value=value)

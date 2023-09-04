@@ -1,7 +1,7 @@
 from graph_generator import *
 
 
-def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top","double_bottom"], noise=True, general=False):
+def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top","double_bottom"], noise=True, general=False, model_type='full'):
     X=[]
     y=[]
     pat={"rising_wedge":1,
@@ -23,7 +23,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
         low = np.array(low)
         close = np.array(close)
         X.append(np.column_stack((ope, hig, low, close)))
-        y.append((start, end, pat[pattern]))
+        if model_type == 'full':
+            y.append((start, end, pat[pattern]))
+        elif model_type == 'categorise':
+            tmp_pattern = np.array(1)
+            y.append(([tmp_pattern]))
 
     if noise:
         for i in range(l):
@@ -47,7 +51,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((-1, -1, 0))
+                if model_type == 'full':
+                    y.append((-1, -1, 0))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(0)
+                    y.append(([tmp_pattern]))
 
             if pattern == "falling_wedge":
                 m= np.random.randint(0,10)
@@ -69,7 +77,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((-1, -1, 0))
+                if model_type == 'full':
+                    y.append((-1, -1, 0))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(0)
+                    y.append(([tmp_pattern]))
 
             if pattern == "double_top":
                 m= np.random.randint(0,10)
@@ -91,7 +103,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((-1, -1, 0))
+                if model_type == 'full':
+                    y.append((-1, -1, 0))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(0)
+                    y.append(([tmp_pattern]))
 
             if pattern == "double_bottom":
                 m= np.random.randint(0,10)
@@ -113,7 +129,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((-1, -1, 0))
+                if model_type == 'full':
+                    y.append((-1, -1, 0))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(0)
+                    y.append(([tmp_pattern]))
 
     if general:
         for i in range(l):
@@ -130,7 +150,13 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((start, end, pat[pattern]))
+                
+                if model_type == 'full':
+                    y.append((start, end, pat[pattern]))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(1)
+                    y.append(([tmp_pattern]))
+                
 
             if pattern == "falling_wedge":
                 m= np.random.randint(0,10)
@@ -145,7 +171,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((start, end, pat[pattern]))
+                if model_type == 'full':
+                    y.append((start, end, pat[pattern]))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(1)
+                    y.append(([tmp_pattern]))
 
             if pattern == "double_top":
                 m= np.random.randint(0,10)
@@ -160,7 +190,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((start, end, pat[pattern]))
+                if model_type == 'full':
+                    y.append((start, end, pat[pattern]))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(1)
+                    y.append(([tmp_pattern]))
 
             if pattern == "double_bottom":
                 m= np.random.randint(0,10)
@@ -175,7 +209,11 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                y.append((start, end, pat[pattern]))
+                if model_type == 'full':
+                    y.append((start, end, pat[pattern]))
+                elif model_type == 'categorise':
+                    tmp_pattern = np.array(1)
+                    y.append(([tmp_pattern]))
 
 
     return X, y
