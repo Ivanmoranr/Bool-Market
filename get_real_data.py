@@ -97,21 +97,25 @@ def get_up_down(patterns=["uptrend","downtrend"]):
 
     return X1, y1, X2, y2
 
-def data_augmentation(X1, y1):
+def data_augmentation(X1, y1, noise = False):
     x_1=[]
     y_1=[]
-    for i in range(len(X1)):
-        x_1.append(X1[i][:y1[i][0]])
-        y_1.append((-1,-1,0))
-    for i in range(len(X1)):
-        x_1.append(X1[i][y1[i][1]:])
-        y_1.append((-1,-1,0))
+    if noise:
+        for i in range(len(X1)):
+            if y1[i][0]>9:
+                x_1.append(X1[i][:y1[i][0]])
+                y_1.append((-1,-1,0))
+        for i in range(len(X1)):
+            if (len(X1)-y1[i][1])>9:
+                x_1.append(X1[i][y1[i][1]:])
+                y_1.append((-1,-1,0))
     for i in range(len(X1)):
         for i in range(10):
-            num = np.random.randint(0,round(y1[i][0]/3))
-            num_2 = np.random.randint(0,round(y1[i][0]/3))
-            x_1.append(X1[i][(y1[i][0]-num):(y1[i][1]+num_2)])
-            y_1.append((num, num_2+y1[i][1], y1[i][2]))
+            if round(y1[i][0]/3)>3:
+                num = np.random.randint(0,round(y1[i][0]/3))
+                num_2 = np.random.randint(0,round(y1[i][0]/3))
+                x_1.append(X1[i][(y1[i][0]-num):(y1[i][1]+num_2)])
+                y_1.append((num, num_2+y1[i][1], y1[i][2]))
     return x_1, y_1
 
 def upside_down(x_1, y_1):
