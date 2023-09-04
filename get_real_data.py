@@ -111,11 +111,12 @@ def data_augmentation(X1, y1, noise = False):
                 y_1.append((-1,-1,0))
     for i in range(len(X1)):
         for i in range(10):
-            if round(y1[i][0]/3)>3:
-                num = np.random.randint(0,round(y1[i][0]/3))
-                num_2 = np.random.randint(0,round(y1[i][0]/3))
-                x_1.append(X1[i][(y1[i][0]-num):(y1[i][1]+num_2)])
-                y_1.append((num, num_2+y1[i][1], y1[i][2]))
+            if round(y1[i][0]*(2/3))>4:
+                if round((len(X1)-y1[i][1])*(2/3))>4:
+                    num = np.random.randint(0,round(y1[i][0]*(2/3)))
+                    num_2 = np.random.randint(0,round((len(X1)-y1[i][1])*(2/3)))
+                    x_1.append(X1[i][(y1[i][0]-num):(y1[i][1]+num_2)])
+                    y_1.append((num, num_2+y1[i][1], y1[i][2]))
     return x_1, y_1
 
 def upside_down(x_1, y_1):
@@ -144,11 +145,11 @@ def upside_down(x_1, y_1):
 
     return X_1, Y_1
 
-def augmentation(X1, y1, X2, y2, X3, y3, X4, y4):
-    x_1, y_1 = data_augmentation(X1, y1)
-    x_2, y_2 = data_augmentation(X2, y2)
-    x_3, y_3 = data_augmentation(X3, y3)
-    x_4, y_4 = data_augmentation(X4, y4)
+def augmentation(X1, y1, X2, y2, X3, y3, X4, y4, noise=True):
+    x_1, y_1 = data_augmentation(X1, y1, noise=noise)
+    x_2, y_2 = data_augmentation(X2, y2, noise=noise)
+    x_3, y_3 = data_augmentation(X3, y3, noise=noise)
+    x_4, y_4 = data_augmentation(X4, y4, noise=noise)
 
     X_2, Y_2 = upside_down(x_1, y_1)
     X_1, Y_1 = upside_down(x_2, y_2)
