@@ -12,4 +12,8 @@ datetime
 plotly==5.16.1
 statsmodels
 ipywidgets
- scipy==1.11.2
+tensorflow
+selenium
+scipy==1.11.2
+
+

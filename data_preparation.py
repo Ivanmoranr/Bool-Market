@@ -149,11 +149,11 @@ def real_data_pattern(pattern, model_type):
     return X_real, y_real
 
 
-def synthetic_data(X_real, pattern, model_type):
+def synthetic_data(X_real, pattern, model_type, noise=True):
     """Takes the real X data and pattern and returns the required amount of synthetic data"""
     amount_40 = int(len(X_real) * 0.4)
 
-    X_synthetic, y_synthetic = gen_x_y(l=amount_40, pattern=pattern, noise=True, general=False, model_type=model_type)
+    X_synthetic, y_synthetic = gen_x_y(l=amount_40, pattern=pattern, noise=noise, general=False, model_type=model_type)
 
     return X_synthetic, y_synthetic
 
@@ -195,9 +195,13 @@ def real_data_no_pattern(X_real, pattern, model_type):
     return X_no_pattern, y_no_pattern
 
 
-def join_data(real_pattern, synthetic, real_no_pattern):
-    """Takes all data and returns a combined list of arrays"""
-    return real_pattern + synthetic + real_no_pattern
+def join_data(*args):
+    """Takes data arrays as arguments and returns a combined list of arrays"""
+    combined_data = []
+    for data in args:
+        if data is not None:
+            combined_data.extend(data)
+    return combined_data
 
 
 def pad_arrays(X, dtype='float32', padding='post', value=-100):
