@@ -13,7 +13,7 @@ plotly==5.16.1
 statsmodels
 ipywidgets
 tensorflow
-
+selenium
 scipy==1.11.2
 
 
