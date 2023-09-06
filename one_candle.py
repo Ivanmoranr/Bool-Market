@@ -21,8 +21,8 @@ def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle =
 
     if with_pattern == True:
         data = np.array(df.iloc[:,1:5])
-        data_preprocessed = preprocess_X(data)
-        ax = popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d)
+        data_preprocessed, scaler = preprocess_X(data)
+        ax = popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, scaler)
         for item in ax:
             if item[4] == [0, 0, 0, 0, 0]: item[4] = "No pattern"
             if item[4] == [0, 0, 0, 0, 1]: item[4] ="No pattern"
@@ -35,7 +35,9 @@ def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle =
             item[1] = np.round(item[1]).astype(np.int16)
 
 
-    return df, ax
+        return df, ax
+
+    return df
 
 def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = False):
     df, ax = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
@@ -55,15 +57,15 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
             y_rect = [lower_bound, lower_bound, upper_bound, upper_bound, lower_bound]
 
             # Create a scatter trace for the rectangle
-            # data.append(go.Scatter(
-            #     x=x_rect,
-            #     y=y_rect,
-            #     mode='lines',
-            #     fill='toself',  # Fill the area enclosed by the lines
-            #     fillcolor='rgba(0, 0, 255, 0.2)',  # Set the fill color and opacity
-            #     line=dict(color='blue'),  # Set the line color
-            #     name='Rectangle'  # Name for the legend
-            # ))
+            data.append(go.Scatter(
+                x=x_rect,
+                y=y_rect,
+                mode='lines',
+                fill='toself',  # Fill the area enclosed by the lines
+                fillcolor='rgba(0, 0, 255, 0.2)',  # Set the fill color and opacity
+                line=dict(color='blue'),  # Set the line color
+                name='Rectangle'  # Name for the legend
+            ))
 
     # Create a scatter trace for some other data (optional)
     # This is just to demonstrate the rectangle within a plot
@@ -73,6 +75,7 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
                 low=df.iloc[:,3],
                 close=df.iloc[:,4]))
 
+    data = [data]
     # Create the figure
     fig = go.Figure(data=data)
 
@@ -81,7 +84,7 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
     return ax
 
 
-def popping_pattern(lis, pretrained_model_p, pretrained_model_d):
+def popping_pattern(lis, pretrained_model_p, pretrained_model_d, scaler):
 
 
     assert len(lis.shape) == 3
@@ -99,8 +102,9 @@ def popping_pattern(lis, pretrained_model_p, pretrained_model_d):
         end = np.round(y_d[0][1]).astype(np.int16)
         a = lis[0,:start]
         b = lis[0,end:]
-        low = int(min(lis[0][:,1]))
-        high = int(max(lis[0][:,2]))
+        lip = scaler.inverse_transform(lis[0])
+        low = int(min(lip[:,1]))
+        high = int(max(lip[:,2]))
         lis = tf.convert_to_tensor([np.concatenate((a,b))], np.float32)
         lis = pad_sequences(lis, maxlen = 450, dtype='float32', padding='post', value=-1)
         _,counts = np.unique(lis[0][:,0], return_counts=True)
