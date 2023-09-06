@@ -106,7 +106,7 @@ def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], nois
     new_Xs, new_ys = [], []
 
     for X, y in zip(Xs, ys):
-        size = X.shape[0]
+        size = len(X)
         start, end, pattern = y
 
         start_margin, end_margin = round(start * (2/3)), round((size - end )*(2/3))
