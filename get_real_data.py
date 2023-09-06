@@ -188,15 +188,74 @@ def augmentate(X1, y1, noise=True):
 
     return X, y
 
-def get_data():
-    X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom = get_X_y(noise=False, general=False)
+def get_data(synth=True):
     X1, y1, X2, y2, X3, y3, X4, y4 = get_real_X_y(noise=False)
-    X = X1 + X2 + X3 + X4 + X_ris_wedg + X_fal_wedg + X_d_top + X_d_bottom
-    y = y1 + y2 + y3 + y4 + y_ris_wedg + y_fal_wedg + y_d_top + y_d_bottom
+
+    if synth:
+
+        X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom = get_X_y(noise=False, general=False)
+        X = X1 + X2 + X3 + X4 + X_ris_wedg + X_fal_wedg + X_d_top + X_d_bottom
+        y = y1 + y2 + y3 + y4 + y_ris_wedg + y_fal_wedg + y_d_top + y_d_bottom
+
+    else:
+        X = X1 + X2 + X3 + X4
+        y = y1 + y2 + y3 + y4
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     X_train, y_train = augmentate(X_train, y_train, noise=True)
     X_test, y_test = augmentate(X_test, y_test, noise=True)
     X_train_preprocessed, y_train_p, y_train_dates = preprocess(X_train, y_train)
     X_test_preprocessed, y_test_p, y_test_dates = preprocess(X_test, y_test)
+    return X_train_preprocessed, y_train_p, y_train_dates, X_test_preprocessed, y_test_p, y_test_dates
+
+
+def get_single_data(X_train_preprocessed, y_train_p, y_train_dates, X_test_preprocessed, y_test_p, y_test_dates, pattern = ["rising_wedge", "falling_wedge", "double_bottom", "double_top"]):
+
+    mapping = {
+            "rising_wedge": [0, 0, 0, 1, 0],
+            "falling_wedge": [0, 0, 1, 0, 0],
+            "double_top": [0, 1, 0, 0, 0],
+            "double_bottom": [1, 0, 0, 0, 0]
+        }
+    ohe = mapping[pattern]
+
+
+
+    X_t, y_d, y_p = [], [], []
+    for pattern, X, dates in zip(np.array(y_test_p), X_test_preprocessed, y_test_dates):
+        if (((pattern == ohe).sum()) == 5):
+
+            y_p.append(1)
+            X_t.append(X)
+            y_d.append(dates)
+
+        if (((pattern == [0, 0, 0, 0, 1]).sum()) == 5):
+
+            y_p.append(0)
+            X_t.append(X)
+            y_d.append(dates)
+
+    X_test_preprocessed = tf.convert_to_tensor(X_t, np.float32)
+    y_test_p = tf.convert_to_tensor(y_p, np.int16)
+    y_test_dates = tf.convert_to_tensor(y_d, np.int16)
+
+    X_t, y_d, y_p = [], [], []
+    for pattern, X, dates in zip(np.array(y_train_p), X_train_preprocessed, y_train_dates):
+        if ((pattern == ohe).sum()) == 5:
+            y_p.append(1)
+            X_t.append(X)
+            y_d.append(dates)
+
+        if (((pattern == [0, 0, 0, 0, 1]).sum()) == 5):
+
+            y_p.append(0)
+            X_t.append(X)
+            y_d.append(dates)
+
+    X_train_preprocessed = tf.convert_to_tensor(X_t, np.float32)
+    y_train_p = tf.convert_to_tensor(y_p, np.int16)
+    y_train_dates = tf.convert_to_tensor(y_d, np.int16)
+
+
     return X_train_preprocessed, y_train_p, y_train_dates, X_test_preprocessed, y_test_p, y_test_dates

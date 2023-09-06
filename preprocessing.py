@@ -42,3 +42,27 @@ def preprocess(X, y):
     y_train_dates = tf.convert_to_tensor(y_dates, np.int16)
 
     return X_train_preprocessed, y_train_p, y_train_dates
+
+
+def preprocess_X(X):
+
+    assert len(X)<451, "The maximum days possible are 450"
+
+
+
+    open_scaler_i = StandardScaler()
+    X_train_processed = open_scaler_i.fit_transform(X)
+
+
+    maxlen = 450
+
+    X_train_preprocessed = pad_sequences([X_train_processed], maxlen = maxlen, dtype='float32', padding='post', value=-1)
+
+    if len(X_train_preprocessed.shape) == 2:
+        X_train_preprocessed = tf.convert_to_tensor([X_train_preprocessed], np.float32)
+    elif len(X_train_preprocessed.shape) == 3:
+        X_train_preprocessed = tf.convert_to_tensor(X_train_preprocessed, np.float32)
+    else:
+        return "Errorrrrrr"
+
+    return X_train_preprocessed
