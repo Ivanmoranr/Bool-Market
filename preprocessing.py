@@ -50,8 +50,8 @@ def preprocess_X(X):
 
 
 
-    open_scaler_i = StandardScaler()
-    X_train_processed = open_scaler_i.fit_transform(X)
+    open_scaler = StandardScaler()
+    X_train_processed = open_scaler.fit_transform(X)
 
 
     maxlen = 450
@@ -65,4 +65,4 @@ def preprocess_X(X):
     else:
         return "Errorrrrrr"
 
-    return X_train_preprocessed
+    return X_train_preprocessed, open_scaler
