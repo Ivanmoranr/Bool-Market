@@ -102,12 +102,17 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
     if (with_candle == True) & (with_pattern == False):
         df = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
         data = []
+
+
+
+
     
     
     if (with_candle == True):    
         pass
     
     
+
     data = data
     # Create the figure
     fig = go.Figure(data=data)
@@ -117,32 +122,142 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
 
 
 
-def popping_pattern(lis, pretrained_model_p, pretrained_model_d, scaler):
+def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, scaler):
 
+    end_index=[0]
+    ends_index=[0]
 
-    assert len(lis.shape) == 3
+    lis = tf.convert_to_tensor([data_preprocessed], np.float32)
+
+    a1=1
+    while list(data_preprocessed[0][a1]) != [-1, -1, -1, -1]:
+        a1+=1
     _,counts = np.unique(lis[0][:,0], return_counts=True)
     count = counts.sum()-counts.max()
     pattern=[]
     ax=[]
-    while (count>10) & (pattern!=[0, 0, 0, 0, 1]) & (pattern!=[0, 0, 0, 0, 0]):
-        y_p = pretrained_model_p.predict(lis)
-        pattern = list(np.round(y_p)[0].astype(np.int16))
-        if (pattern == [0, 0, 0, 0, 1]) | (pattern == [0, 0, 0, 0, 0]):
+
+    i=0
+
+    while (lis.shape[0]-1) >= i:
+        if i == 0:
+            data=[]
+
+
+        sequence = lis[i]
+
+        a=1
+        while list(sequence[0][a]) != [-1, -1, -1, -1]:
+            a+=1
+
+
+        if i==0:
+            saturation=0
+        if a<round(a1*0.15):
+            saturation+=1
+        if saturation == lis.shape[0]:
+
             break
-        y_d = pretrained_model_d.predict(lis)[1]
+
+
+
+
+        y_p = pretrained_model_p.predict(sequence)
+        pattern = list(np.round(y_p)[0].astype(np.int16))
+        y_d = pretrained_model_d.predict(sequence)[1]
         start = np.round(y_d[0][0]).astype(np.int16)
         end = np.round(y_d[0][1]).astype(np.int16)
-        a = lis[0,:start]
-        b = lis[0,end:]
-        lip = scaler.inverse_transform(lis[0])
-        low = int(min(lip[:,1]))
-        high = int(max(lip[:,2]))
-        lis = tf.convert_to_tensor([np.concatenate((a,b))], np.float32)
-        lis = pad_sequences(lis, maxlen = 450, dtype='float32', padding='post', value=-1)
-        _,counts = np.unique(lis[0][:,0], return_counts=True)
-        count = counts.sum()-counts.max()
-        ax.append([start, end, low, high, pattern])
+
+        # if len(end_index) == 0:
+        #     end_index.append(end)
+
+        if (pattern == [0, 0, 0, 0, 1]) | (pattern == [0, 0, 0, 0, 0]) | (a<round(a1*0.15)) | (start>end) | (start<0) | (end<0):
+
+            start = round(a/2)
+            end = round(a/2)
+            ax.append([0, 0, 0, 0, [0, 0, 0, 0, 1]])
+
+
+
+        lip = scaler.inverse_transform(sequence[0][:a])
+
+        if (start != end) & (start>0) & (end>0) & (start<end):
+
+            low = int(min(lip[start:end,1]))
+            high = int(max(lip[start:end,2]))
+
+            ends = end+end_index[i]
+            starts = start + end_index[i]
+            if ends > a:
+                ends = a
+
+
+            ax.append([starts, ends, low, high, pattern])
+        else:
+            ends = end + end_index[i]
+        position = (i*2)+1
+        ends_index.insert(position, ends)
+        if len(ax)>1:
+            if ax[-1] == ax[-2]:
+                ax.pop(-1)
+
+                break
+
+
+
+
+        if (i==0) & ((lis.shape[0]-1) == 0):
+
+            st = sequence[0,:start]
+            st = tf.convert_to_tensor([st], np.float32)
+            st = pad_sequences(st, maxlen = 450, dtype='float32', padding='post', value=-1)
+
+            en = sequence[0,end:]
+            en = tf.convert_to_tensor([en], np.float32)
+            en = pad_sequences(en, maxlen = 450, dtype='float32', padding='post', value=-1)
+
+
+            lis = tf.convert_to_tensor([st, en], np.float32)
+            end_index = ends_index.copy()
+
+            i=0
+            continue
+
+        if (lis.shape[0]-1) > 0:
+            if i == 0:
+                data=[]
+
+            if a<round(a1*0.15):
+                a = tf.convert_to_tensor([[[-1,-1,-1,-1],[-1,-1,-1,-1]]], np.float32)
+                a = pad_sequences(a, maxlen = 450, dtype='float32', padding='post', value=-1)
+                a = tf.convert_to_tensor([a, a], np.float32)
+                data.append(a)
+            else:
+
+
+                st = sequence[0,:start]
+                st = tf.convert_to_tensor([st], np.float32)
+                st = pad_sequences(st, maxlen = 450, dtype='float32', padding='post', value=-1)
+
+                en = sequence[0,end:]
+                en = tf.convert_to_tensor([en], np.float32)
+                en = pad_sequences(en, maxlen = 450, dtype='float32', padding='post', value=-1)
+
+
+                lid = tf.convert_to_tensor([st, en], np.float32)
+
+                data.append(lid)
+            if (i>0) & ((lis.shape[0]-1)>0) & (i == (lis.shape[0]-1)):
+
+                end_index = ends_index.copy()
+
+                lis = tf.concat(data, axis=0)
+                i=0
+                continue
+
+        if ((lis.shape[0]-1) > 0):
+
+            i=i+1
 
     return ax
 
