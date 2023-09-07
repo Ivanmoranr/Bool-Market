@@ -4,7 +4,7 @@ import pandas as pd
 from preprocessing import *
 import yfinance as yf
 import plotly.graph_objs as go
-
+from datetime import datetime, timedelta
 
 def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle = False):
     df = yf.download(ticker, start=start_date, end=end_date)
@@ -40,48 +40,72 @@ def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle =
     return df
 
 def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = False):
-    df, ax = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
-    data=[]
-    for pattern in ax:
-        if pattern[3] != "No pattern":
+    if with_pattern == True:
+
+        df, ax = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
+        data=[]
+
+        for pattern in ax:
+            if pattern[3] != "No pattern":
+                date_start = start_date
+
+                start_index = int(pattern[0])
+                end_index = int(pattern[1])
+                lower_bound = pattern[2]
+                upper_bound = pattern[3]
+
+                date_format = "%Y-%m-%d"
+                start_object = datetime.strptime(date_start, date_format)
+                new_start = start_object + timedelta(days=start_index)
+
+                end_object = datetime.strptime(date_start, date_format)
+                new_end = end_object + timedelta(days=end_index)
+                # Convert the new date back to a string if needed
+                start_index = new_start.strftime(date_format)
+                end_index = new_end.strftime(date_format)
 
 
-            # Define the rectangle coordinates
-            start_index = pattern[0]
-            end_index = pattern[1]
-            lower_bound = pattern[2]
-            upper_bound = pattern[3]
+                # Create the rectangle coordinates
+                x_rect = [start_index, end_index, end_index, start_index, start_index]
+                y_rect = [lower_bound, lower_bound, upper_bound, upper_bound, lower_bound]
 
-            # Create the rectangle coordinates
-            x_rect = [start_index, end_index, end_index, start_index, start_index]
-            y_rect = [lower_bound, lower_bound, upper_bound, upper_bound, lower_bound]
+                # Create a scatter trace for the rectangle
+                data.append(go.Scatter(
+                    x=x_rect,
+                    y=y_rect,
+                    mode='lines',
+                    fill='toself',  # Fill the area enclosed by the lines
+                    fillcolor='rgba(0, 0, 255, 0.2)',  # Set the fill color and opacity
+                    line=dict(color='blue'),  # Set the line color
+                    name='Rectangle'  # Name for the legend
+                ))
 
-            # Create a scatter trace for the rectangle
-            data.append(go.Scatter(
-                x=x_rect,
-                y=y_rect,
-                mode='lines',
-                fill='toself',  # Fill the area enclosed by the lines
-                fillcolor='rgba(0, 0, 255, 0.2)',  # Set the fill color and opacity
-                line=dict(color='blue'),  # Set the line color
-                name='Rectangle'  # Name for the legend
-            ))
 
     # Create a scatter trace for some other data (optional)
     # This is just to demonstrate the rectangle within a plot
-    data.append(go.Candlestick(x=df.iloc[:,0],
+        data.append(go.Candlestick(x=df.iloc[:,0],
                 open=df.iloc[:,1],
                 high=df.iloc[:,2],
                 low=df.iloc[:,3],
                 close=df.iloc[:,4]))
 
-    data = [data]
+
+    else:
+        df = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
+        data=[]
+        data.append(go.Candlestick(x=df.iloc[:,0],
+                open=df.iloc[:,1],
+                high=df.iloc[:,2],
+                low=df.iloc[:,3],
+                close=df.iloc[:,4]))
+
+    data = data
     # Create the figure
     fig = go.Figure(data=data)
 
     # Show the figure
     fig.show()
-    return ax
+
 
 
 def popping_pattern(lis, pretrained_model_p, pretrained_model_d, scaler):
