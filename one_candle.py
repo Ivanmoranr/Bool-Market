@@ -46,7 +46,7 @@ def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle =
 
     return df
 
-def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = False):
+def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = False, cdle_patterns=pd.Series(CDL_PATTERNS.keys()).sample(2)):
     if with_pattern == True:
 
         df, ax = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
@@ -56,24 +56,9 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
 
             if pattern[4] != 'No pattern':
 
-                # date_start = start_date
 
-                # start_index = int(pattern[0])
-                # end_index = int(pattern[1])
-                # lower_bound = pattern[2]
-                # upper_bound = pattern[3]
-
-                # date_format = "%Y-%m-%d"
-                # start_object = datetime.strptime(date_start, date_format)
-                # new_start = start_object + timedelta(days=start_index)
-
-                # end_object = datetime.strptime(date_start, date_format)
-                # new_end = end_object + timedelta(days=end_index)
-                # # Convert the new date back to a string if needed
-                # start_index = new_start.strftime(date_format)
-                # end_index = new_end.strftime(date_format)
                 start_index = str(df.iloc[pattern[0]]["date"]).replace(" 00:00:00","")
-                end_index = str(df.iloc[pattern[1]]["date"]).replace(" 00:00:00","")
+                end_index = str(df.iloc[pattern[1]-1]["date"]).replace(" 00:00:00","")
                 lower_bound = pattern[2]
                 upper_bound = pattern[3]
                 # Create the rectangle coordinates
@@ -125,10 +110,13 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
 
 
     if with_candle==True:
-        dat = create_data_stock(ticker, start_date, end_date)
-        create_candlestick_chart(fig, dat, CDL_PATTERNS)
+        dat = create_data_stock(ticker, start_date, end_date, patterns = cdle_patterns)
+
+        fig = create_candlestick_chart(fig, dat)
 
     fig.show()
+
+
 
 
 def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, scaler):
@@ -192,8 +180,7 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
 
         if (start != end) & (start>0) & (end>0) & (start<end):
 
-            low = int(min(lip[start:end,1]))
-            high = int(max(lip[start:end,2]))
+
 
             if end>a:
                 end = a
@@ -202,7 +189,8 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
             if ends > a1:
                 ends = a1
             if (starts<ends)&((ends-starts)>5):
-
+                low = int(min(lip[start:end,1]))
+                high = int(max(lip[start:end,2]))
                 ax.append([starts, ends, low, high, pattern])
 
         else:
@@ -273,69 +261,46 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
 
     return ax
 
-def create_data_stock(ticker, start_date, end_date):
-    data = yf.download(ticker, start=start_date, end=end_date).reset_index()
-    for key, pattern_func in CDL_PATTERNS.items():
-        calculated_value = pattern_func(data['Open'], data['High'], data['Low'], data['Close'])
+def create_data_stock(ticker, start_date, end_date, patterns = pd.Series(CDL_PATTERNS.keys()).sample(2)):
+    dat = yf.download(ticker, start=start_date, end=end_date).reset_index()
+    for pattern in patterns:
+        calculated_value = CDL_PATTERNS[pattern](dat['Open'], dat['High'], dat['Low'], dat['Close'])
         if calculated_value is not None:
-            data[key] = calculated_value
+            dat[pattern] = calculated_value
 
-    return data
-def create_candlestick_chart(fig, data_apple_cdl, patterns):
+    return dat
+def create_candlestick_chart(fig, dat):
     # Filter out patterns that are not present in the data
-    present_patterns = {}
-    for pattern_name, pattern_code in patterns.items():
-        pattern_results = pattern_code(data_apple_cdl['Open'], data_apple_cdl['High'], data_apple_cdl['Low'], data_apple_cdl['Close'])
-        if any(pattern_results):
-            present_patterns[pattern_name] = pattern_code
-
-
-    checkboxes = {}
-
-    # Create checkbox widgets for each present pattern
-    for pattern_name, pattern_code in present_patterns.items():
-        checkbox = widgets.Checkbox(
-            description=pattern_name,
-            value=False,
-            inline=True
-        )
-        checkboxes[pattern_name] = checkbox
-
-    def update_fig(change):
-        annotations = []
-
-        for pattern_name, chkbox in checkboxes.items():
-            if chkbox.value:
-                pattern_code = present_patterns[pattern_name]
-                pattern_results = pattern_code(data_apple_cdl['Open'], data_apple_cdl['High'], data_apple_cdl['Low'], data_apple_cdl['Close'])
-                for index, row in data_apple_cdl.iterrows():
-                    if pattern_results[index] != 0:
-                        annotation = {
-                            'x': row['Date'],
-                            'y': row['High'],
-                            'text': pattern_name,
-                            'showarrow': True,
-                            'arrowhead': 2,
-                            'ax': 0,
-                            'ay': -40
-                        }
-                        annotations.append(annotation)
-
-        with fig.batch_update():
-            fig.layout.annotations = annotations
+    arrow_annotation=[]
+    for index, row in dat.iterrows():
+        for i in range(dat.iloc[:,7:].shape[1]):
+            if row[7+i] != 0:
+                # arrow_annotation.append(go.layout.Annotation(
+                #                         x=row['Date'],
+                #                         y=row['High'],
+                #                         text=dat.columns[7+i],
+                #                         showarrow=True,
+                #                         arrowhead=2,
+                #                         ax=0,
+                #                         ay=-40
+                #                     ))
+                annotation_dict = {
+                'x': row['Date'],
+                'y': row['High'],
+                'text': dat.columns[7 + i],
+                'showarrow': True,
+                'arrowhead': 2,
+                'ax': 0,
+                'ay': -40
+                }
+                arrow_annotation.append(annotation_dict)
+    with fig.batch_update():
+            fig.layout.annotations = arrow_annotation
             fig.update_layout(xaxis_rangeslider_visible=False)
+                                    # Add the arrow annotation to the layout
+    #fig.update_layout(annotations=[arrow_annotation])
 
-
-    for chkbox in checkboxes.values():
-        chkbox.observe(update_fig, names='value')
-
-    #display(widgets.VBox([chkbox for chkbox in checkboxes.values()] + [fig]))
-
-    accordion = widgets.Accordion(children=[widgets.VBox([chkbox for chkbox in checkboxes.values()])])
-
-    # Set the title of the Accordion
-    accordion.set_title(0, 'Dropdown Content')  # You can change 'Dropdown Content' to your desired title
-
+    return fig
 
 def one_candle(df):
     df = dochl(df)
