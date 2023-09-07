@@ -105,6 +105,14 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
 
 
 
+
+    
+    
+    if (with_candle == True):    
+        pass
+    
+    
+
     data = data
     # Create the figure
     fig = go.Figure(data=data)
