@@ -336,9 +336,6 @@ def create_candlestick_chart(fig, data_apple_cdl, patterns):
     # Set the title of the Accordion
     accordion.set_title(0, 'Dropdown Content')  # You can change 'Dropdown Content' to your desired title
 
-    # Display the Accordion
-    display(accordion)
-    display(fig)
 
 def one_candle(df):
     df = dochl(df)
