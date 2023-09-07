@@ -90,7 +90,7 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
                 close=df.iloc[:,4]))
 
 
-    else:
+    elif (with_candle == False) & (with_pattern == False):
         df = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
         data=[]
         data.append(go.Candlestick(x=df.iloc[:,0],
@@ -99,6 +99,15 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
                 low=df.iloc[:,3],
                 close=df.iloc[:,4]))
 
+    if (with_candle == True) & (with_pattern == False):
+        df = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
+        data = []
+    
+    
+    if (with_candle == True):    
+        pass
+    
+    
     data = data
     # Create the figure
     fig = go.Figure(data=data)
