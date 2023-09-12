@@ -150,13 +150,13 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
                 low = np.array(low)
                 close = np.array(close)
                 X.append(np.column_stack((ope, hig, low, close)))
-                
+
                 if model_type == 'full':
                     y.append((start, end, pat[pattern]))
                 elif model_type == 'categorise':
                     tmp_pattern = np.array(1)
                     y.append(([tmp_pattern]))
-                
+
 
             if pattern == "falling_wedge":
                 m= np.random.randint(0,3)
@@ -218,6 +218,38 @@ def gen_x_y(l=round(0.4*50),pattern=["rising_wedge","falling_wedge","double_top"
 
     return X, y
 
+
+
+def gen_sec_x_y(l=round(0.4*50),pattern=["ascending_triangle","descending_triangle","h&s_top","h&s_bottom"], noise=True, general=False, model_type='full'):
+    X=[]
+    y=[]
+    pat={"ascending_triangle":5,
+            "descending_triangle":6,
+            "h&s_top":7,
+            "h&s_bottom":8
+        }
+    for i in range(l):
+
+        func={"ascending_triangle":ascending_triangle(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
+            "descending_triangle":descending_triangle(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
+            "h&s_top":head_shoulders(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
+            "h&s_bottom":inv_head_shoulders(n=500, mu=3, sigma=5, h=1, noise_level=2, ar1 = 0.95, ar2 = 0),
+            }
+
+        date, ope, hig, low, close, start, end = func[pattern]
+        ope=np.array(ope)
+        hig=np.array(hig)
+        low = np.array(low)
+        close = np.array(close)
+        X.append(np.column_stack((ope, hig, low, close)))
+        if model_type == 'full':
+            y.append((start, end, pat[pattern]))
+        elif model_type == 'categorise':
+            tmp_pattern = np.array(1)
+            y.append(([tmp_pattern]))
+
+    return X, y
+
 def get_X_y(noise=True, general=False):
     amount={"rising_wedge":556,
         "falling_wedge":268,
@@ -228,6 +260,20 @@ def get_X_y(noise=True, general=False):
     X_d_top, y_d_top = gen_x_y(l=round(amount["double_top"]*0.4), pattern="double_top", noise=noise, general=general)
     X_d_bottom, y_d_bottom = gen_x_y(l=round(amount["double_bottom"]*0.4), pattern="double_bottom", noise=noise, general=general)
     return X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom
+
+
+def get_sec_X_y(noise=True, general=False):
+    amount={"ascending_triangle":86,
+            "descending_triangle":98,
+            "h&s_top":86,
+            "h&s_bottom":43
+        }
+    X_ris_wedg, y_ris_wedg = gen_sec_x_y(l=round(amount["ascending_triangle"]*0.4), pattern="ascending_triangle", noise=noise, general=general)
+    X_fal_wedg, y_fal_wedg = gen_sec_x_y(l=round(amount["descending_triangle"]*0.4), pattern="descending_triangle", noise=noise, general=general)
+    X_d_top, y_d_top = gen_sec_x_y(l=round(amount["h&s_top":]*0.4), pattern="h&s_top", noise=noise, general=general)
+    X_d_bottom, y_d_bottom = gen_sec_x_y(l=round(amount["h&s_bottom"]*0.4), pattern="h&s_bottom", noise=noise, general=general)
+    return X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom
+
 
 def get_rand_noise(l=round(0.4*50)):
     X=[]

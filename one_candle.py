@@ -102,6 +102,11 @@ def plotting(ticker, start_date, end_date,  with_pattern=False, with_candle = Fa
     if (with_candle == True) & (with_pattern == False):
         df = get_chart_p(ticker, start_date, end_date,  with_pattern=with_pattern, with_candle = with_candle)
         data = []
+        data.append(go.Candlestick(x=df.iloc[:,0],
+                open=df.iloc[:,1],
+                high=df.iloc[:,2],
+                low=df.iloc[:,3],
+                close=df.iloc[:,4]))
 
     data = data
     # Create the figure
