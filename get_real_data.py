@@ -4,8 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from synthetic_data import *
 from preprocessing import *
-def get_real_X_y(noise=False):
-    pattern_list = ["rising_wedge", "falling_wedge", "double_top", "double_bottom"]
+def get_real_X_y(noise=False, pattern_list = ["rising_wedge", "falling_wedge", "double_top", "double_bottom"]):
 
     X1=[]
     y1=[]
@@ -17,28 +16,28 @@ def get_real_X_y(noise=False):
     y4=[]
     for pattern in pattern_list:
         directory_path = f'data/patterns/{pattern}'
-        if pattern == "rising_wedge":
+        if pattern == pattern_list[0]:
             for root, dirs, files in os.walk(directory_path):
                 for filename in files:
-                    df = pd.read_csv(f"data/patterns/rising_wedge/{filename}")
+                    df = pd.read_csv(f"{directory_path}/{filename}")
                     X1.append(np.array(df[["Open", "High", "Low", "Close"]]))
                     y1.append(tuple(df.iloc[0][["Start Date", "End Date", "Pattern"]]))
-        if pattern == "falling_wedge":
+        if pattern == pattern_list[1]:
             for root, dirs, files in os.walk(directory_path):
                 for filename in files:
-                    df = pd.read_csv(f"data/patterns/falling_wedge/{filename}")
+                    df = pd.read_csv(f"{directory_path}/{filename}")
                     X2.append(np.array(df[["Open", "High", "Low", "Close"]]))
                     y2.append(tuple(df.iloc[0][["Start Date", "End Date", "Pattern"]]))
-        if pattern == "double_top":
+        if pattern == pattern_list[2]:
             for root, dirs, files in os.walk(directory_path):
                 for filename in files:
-                    df = pd.read_csv(f"data/patterns/double_top/{filename}")
+                    df = pd.read_csv(f"{directory_path}/{filename}")
                     X3.append(np.array(df[["Open", "High", "Low", "Close"]]))
                     y3.append(tuple(df.iloc[0][["Start Date", "End Date", "Pattern"]]))
-        if pattern == "double_bottom":
+        if pattern == pattern_list[3]:
             for root, dirs, files in os.walk(directory_path):
                 for filename in files:
-                    df = pd.read_csv(f"data/patterns/double_bottom/{filename}")
+                    df = pd.read_csv(f"{directory_path}/{filename}")
                     X4.append(np.array(df[["Open", "High", "Low", "Close"]]))
                     y4.append(tuple(df.iloc[0][["Start Date", "End Date", "Pattern"]]))
 
@@ -100,7 +99,7 @@ def get_up_down(patterns=["uptrend","downtrend"]):
 
     return X1, y1, X2, y2
 
-def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], noise = False):
+def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], noise = False, n=1):
     """Creates more patterns based on the list of given ones, optionally with pattern."""
     assert len(Xs) == len(ys)
     new_Xs, new_ys = [], []
@@ -112,7 +111,7 @@ def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], nois
         start_margin, end_margin = round(start * (2/3)), round((size - end )*(2/3))
         if start_margin > 4 and end_margin > 4:
 
-            for _ in range(10):
+            for _ in range(n):
                 margin_left = np.random.randint(4, start_margin)
                 margin_right = np.random.randint(4, end_margin)
                 new_Xs.append(X[start - margin_left : end + margin_right])
@@ -144,6 +143,10 @@ def upside_down(Xs, ys):
         2: 1,
         3: 4,
         4: 3,
+        5:6,
+        6:5,
+        7:8,
+        8:7
     }
     for X, y in zip(Xs, ys):
         start, end, pattern = y
@@ -180,34 +183,69 @@ def augmentation(X1, y1, X2, y2, X3, y3, X4, y4, noise=True):
     return X1, y1, X2, y2, X3, y3, X4, y4
 
 
-def augmentate(X1, y1, noise=True):
-    x_1, y_1 = data_augmentation(X1, y1, noise=noise)
+def augmentate(X1, y1, noise=True, n=1):
+    x_1, y_1 = data_augmentation(X1, y1, noise=noise, n=n)
     X_2, Y_2 = upside_down(x_1, y_1)
     X = x_1 + X_2
     y = y_1 + Y_2
 
     return X, y
 
-def get_data(synth=True):
-    X1, y1, X2, y2, X3, y3, X4, y4 = get_real_X_y(noise=False)
+def prim_separation(X_train, y_train):
+    X_train_sec, y_train_sec, X_train_prim, y_train_prim = [],[],[],[]
+    for X, y in zip(X_train, y_train):
+        if y[2] > 4 :
+            X_train_sec.append(X)
+            y_train_sec.append(y)
+        else:
+            X_train_prim.append(X)
+            y_train_prim.append(y)
+    return X_train_sec, y_train_sec, X_train_prim, y_train_prim
 
+
+def get_data(synth=True):
+    X1, y1, X2, y2, X3, y3, X4, y4 = get_real_X_y(noise=False, pattern_list = ["rising_wedge", "falling_wedge", "double_top", "double_bottom"])
+    X5, y5, X6, y6, X7, y7, X8, y8 = get_real_X_y(noise=False, pattern_list = ["ascending_triangle","descending_triangle","h&s_top","h&s_bottom"])
     if synth:
 
         X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom = get_X_y(noise=False, general=False)
-        X = X1 + X2 + X3 + X4 + X_ris_wedg + X_fal_wedg + X_d_top + X_d_bottom
-        y = y1 + y2 + y3 + y4 + y_ris_wedg + y_fal_wedg + y_d_top + y_d_bottom
+        X_asc_tri, y_asc_tri, X_desc_tri, y_desc_tri, X_hs_top, y_hs_top, X_hs_bottom, y_hs_bottom = get_sec_X_y(noise=False, general=False)
+
+        X = X1 + X2 + X3 + X4 + X_ris_wedg + X_fal_wedg + X_d_top + X_d_bottom + X5 + X6 + X7+ X8 + X_asc_tri + X_desc_tri + X_hs_top + X_hs_bottom
+        y = y1 + y2 + y3 + y4 + y_ris_wedg + y_fal_wedg + y_d_top + y_d_bottom + y5 + y6 + y7 + y8 + y_asc_tri + y_desc_tri + y_hs_top + y_hs_bottom
 
     else:
-        X = X1 + X2 + X3 + X4
-        y = y1 + y2 + y3 + y4
+        X = X1 + X2 + X3 + X4 + X5 + X6 + X7+ X8
+        y = y1 + y2 + y3 + y4 + y5 + y6 + y7 + y8
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
-    X_train, y_train = augmentate(X_train, y_train, noise=True)
-    X_test, y_test = augmentate(X_test, y_test, noise=True)
-    X_train_preprocessed, y_train_p, y_train_dates = preprocess(X_train, y_train)
-    X_test_preprocessed, y_test_p, y_test_dates = preprocess(X_test, y_test)
-    return X_train_preprocessed, y_train_p, y_train_dates, X_test_preprocessed, y_test_p, y_test_dates
+    X_train_sec, y_train_sec, X_train_prim, y_train_prim = prim_separation(X_train, y_train)
+    X_val_sec, y_val_sec, X_val_prim, y_val_prim = prim_separation(X_val, y_val)
+    X_test_sec, y_test_sec, X_test_prim, y_test_prim = prim_separation(X_test, y_test)
+
+    X_train_prim, y_train_prim = augmentate(X_train_prim, y_train_prim, noise=True, n=1)
+    X_test_prim, y_test_prim = augmentate(X_test_prim, y_test_prim, noise=True, n=1)
+    X_val_prim, y_val_prim = augmentate(X_val_prim, y_val_prim, noise=True, n=1)
+
+    X_train_sec, y_train_sec = augmentate(X_train_sec, y_train_sec, noise=True, n=10)
+    X_test_sec, y_test_sec = augmentate(X_test_sec, y_test_sec, noise=True, n=10)
+    X_val_sec, y_val_sec = augmentate(X_val_sec, y_val_sec, noise=True, n=10)
+
+    X_train = X_train_prim + X_train_sec
+    X_test = X_test_prim + X_test_sec
+    X_val = X_val_prim + X_val_sec
+
+    y_train = y_train_prim + y_train_sec
+    y_test = y_test_prim + y_test_sec
+    y_val = y_val_prim + y_val_sec
+
+    X_train_preprocessed, y_train_p1, y_train_p2, y_train_dates = preprocess(X_train, y_train)
+    X_test_preprocessed, y_test_p1, y_test_p2, y_test_dates = preprocess(X_test, y_test)
+    X_val_preprocessed, y_val_p1, y_val_p2, y_val_dates = preprocess(X_val, y_val)
+
+    return X_train_preprocessed, y_train_p1, y_train_p2, y_train_dates, X_test_preprocessed, y_test_p1, y_test_p2, y_test_dates, X_val_preprocessed, y_val_p1, y_val_p2, y_val_dates
 
 
 def get_single_data(X_train_preprocessed, y_train_p, y_train_dates, X_test_preprocessed, y_test_p, y_test_dates, pattern = ["rising_wedge", "falling_wedge", "double_bottom", "double_top"]):

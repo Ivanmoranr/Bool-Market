@@ -11,21 +11,31 @@ def preprocess(X, y):
         end = y_synth[:,1]
         pattern = y_synth[:,2]
         mapping = {
-            0: [0, 0, 0, 0, 1],
-            1: [0, 0, 0, 1, 0],
-            2: [0, 0, 1, 0, 0],
-            3: [0, 1, 0, 0, 0],
-            4: [1, 0, 0, 0, 0]
+            0: ([0, 0, 0, 0, 1],[0]),
+            1: ([0, 0, 0, 1, 0],[0]),
+            2: ([0, 0, 1, 0, 0],[0]),
+            3: ([0, 1, 0, 0, 0],[0]),
+            4: ([1, 0, 0, 0, 0],[0]),
+            5: ([0, 0, 0, 1, 0],[1]),
+            6: ([0, 0, 1, 0, 0],[1]),
+            7: ([0, 1, 0, 0, 0],[1]),
+            8: ([1, 0, 0, 0, 0],[1]),
         }
         mapped_values = [list(mapping[val]) for val in pattern]
-        y_s = (np.column_stack((start, end, mapped_values)))
+        y_p1 = []
+        y_p2 = []
+
+        for pattern, bin in mapped_values:
+            y_p1.append(pattern)
+            y_p2.append(bin)
+        y_s = (np.column_stack((start, end, y_p1, y_p2)))
         return y_s
 
     y_preprocessed = onehotencode(y)
 
     y_dates = y_preprocessed[:,:2]
-    y_p = y_preprocessed[:,2:]
-
+    y_p1 = y_preprocessed[:,2:-1]
+    y_p2 = y_preprocessed[:,-1]
     X_train_processed=[]
     scale={}
     for i in range(len(X)):
@@ -38,10 +48,11 @@ def preprocess(X, y):
     X_train_preprocessed = pad_sequences(X_train_processed, maxlen = maxlen, dtype='float32', padding='post', value=-1)
 
     X_train_preprocessed = tf.convert_to_tensor(X_train_preprocessed, np.float32)
-    y_train_p = tf.convert_to_tensor(y_p, np.int16)
+    y_train_p1 = tf.convert_to_tensor(y_p1, np.int16)
+    y_train_p2 = tf.convert_to_tensor(y_p2, np.int16)
     y_train_dates = tf.convert_to_tensor(y_dates, np.int16)
 
-    return X_train_preprocessed, y_train_p, y_train_dates
+    return X_train_preprocessed, y_train_p1, y_train_p2, y_train_dates
 
 
 def preprocess_X(X):
