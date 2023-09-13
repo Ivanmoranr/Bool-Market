@@ -11,8 +11,8 @@ import ipywidgets as widgets
 
 def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle = False):
     df = yf.download(ticker, start=start_date, end=end_date)
-    pretrained_model_p = tf.keras.models.load_model("model_p")
-    pretrained_model_d = tf.keras.models.load_model("model_p_dates")
+    pretrained_model_p = tf.keras.models.load_model("model_p_final")
+    pretrained_model_d = tf.keras.models.load_model("model_p_d_final")
 
     if with_candle == True:
         df = one_candle(df)
@@ -29,11 +29,14 @@ def get_chart_p(ticker, start_date, end_date,  with_pattern=False, with_candle =
         for item in ax:
             if item[4] == [0, 0, 0, 0, 0]: item[4] = "No pattern"
             if item[4] == [0, 0, 0, 0, 1]: item[4] ="No pattern"
-            if item[4] == [0, 0, 0, 1, 0]: item[4] ="Rising wedge"
-            if item[4] == [0, 0, 1, 0, 0]: item[4] ="Falling wedge"
-            if item[4] == [0, 1, 0, 0, 0]: item[4] ="Double top"
-            if item[4] == [1, 0, 0, 0, 0]: item[4] ="Double bottom"
-            if item[2] == [1, 0, 0, 0, 0]: item[2] ="Double bottom"
+            if item[4:] == [[0, 0, 0, 1, 0],[0]]: item[4] ="Rising wedge"
+            if item[4:] == [[0, 0, 1, 0, 0],[0]]: item[4] ="Falling wedge"
+            if item[4:] == [[0, 1, 0, 0, 0],[0]]: item[4] ="Double top"
+            if item[4:] == [[1, 0, 0, 0, 0],[0]]: item[4] ="Double bottom"
+            if item[4:] == [[0, 0, 0, 1, 0],[1]]: item[4] ="Ascending triangle"
+            if item[4:] == [[0, 0, 1, 0, 0],[1]]: item[4] ="Descending triangle"
+            if item[4:] == [[0, 1, 0, 0, 0],[1]]: item[4] ="Head and shoulders"
+            if item[4:] == [[1, 0, 0, 0, 0],[1]]: item[4] ="Inv. head and shoulders"
             item[0] = np.round(item[0]).astype(np.int16)
             item[1] = np.round(item[1]).astype(np.int16)
             if item[4]!= "No pattern":
@@ -131,8 +134,10 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
 
     lis = tf.convert_to_tensor([data_preprocessed], np.float32)
 
-    a1=1
-    while list(data_preprocessed[0][a1]) != [-1, -1, -1, -1]:
+    a1=0
+    while list(np.array(data_preprocessed[0][a1])) != [-1, -1, -1, -1]:
+        if a1 ==(data_preprocessed.shape[1]-1):
+            break
         a1+=1
     _,counts = np.unique(lis[0][:,0], return_counts=True)
     count = counts.sum()-counts.max()
@@ -165,7 +170,8 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
 
 
         y_p = pretrained_model_p.predict(sequence)
-        pattern = list(np.round(y_p)[0].astype(np.int16))
+        pattern = list(np.round(y_p[0])[0].astype(np.int16))
+        binary = list(np.round(y_p[1])[0].astype(np.int16))
         y_d = pretrained_model_d.predict(sequence)[1]
         start = np.round(y_d[0][0]).astype(np.int16)
         end = np.round(y_d[0][1]).astype(np.int16)
@@ -177,7 +183,7 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
 
             start = round(a/2)
             end = round(a/2)
-            ax.append([0, 0, 0, 0, [0, 0, 0, 0, 1]])
+            ax.append([0, 0, 0, 0, [0, 0, 0, 0, 1],[0]])
 
 
 
@@ -196,7 +202,7 @@ def popping_pattern(data_preprocessed, pretrained_model_p, pretrained_model_d, s
             if (starts<ends)&((ends-starts)>5):
                 low = int(min(lip[start:end,1]))
                 high = int(max(lip[start:end,2]))
-                ax.append([starts, ends, low, high, pattern])
+                ax.append([starts, ends, low, high, pattern, binary])
 
         else:
             ends = end + end_index[i]

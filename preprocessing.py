@@ -22,15 +22,20 @@ def preprocess(X, y):
             8: ([1, 0, 0, 0, 0],[1]),
         }
         mapped_values = [list(mapping[val]) for val in pattern]
-        y_s = (np.column_stack((start, end, mapped_values)))
+        y_p1 = []
+        y_p2 = []
+
+        for pattern, bin in mapped_values:
+            y_p1.append(pattern)
+            y_p2.append(bin)
+        y_s = (np.column_stack((start, end, y_p1, y_p2)))
         return y_s
 
     y_preprocessed = onehotencode(y)
 
     y_dates = y_preprocessed[:,:2]
-    y_p = y_preprocessed[:,2:]
-    y_p1 = y_p[:,0]
-    y_p2 = y_p[:,1]
+    y_p1 = y_preprocessed[:,2:-1]
+    y_p2 = y_preprocessed[:,-1]
     X_train_processed=[]
     scale={}
     for i in range(len(X)):

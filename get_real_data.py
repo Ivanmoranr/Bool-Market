@@ -18,7 +18,6 @@ def get_real_X_y(noise=False, pattern_list = ["rising_wedge", "falling_wedge", "
         directory_path = f'data/patterns/{pattern}'
         if pattern == pattern_list[0]:
             for root, dirs, files in os.walk(directory_path):
-                print(files)
                 for filename in files:
                     df = pd.read_csv(f"{directory_path}/{filename}")
                     X1.append(np.array(df[["Open", "High", "Low", "Close"]]))
@@ -100,7 +99,7 @@ def get_up_down(patterns=["uptrend","downtrend"]):
 
     return X1, y1, X2, y2
 
-def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], noise = False):
+def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], noise = False, n=1):
     """Creates more patterns based on the list of given ones, optionally with pattern."""
     assert len(Xs) == len(ys)
     new_Xs, new_ys = [], []
@@ -112,7 +111,7 @@ def data_augmentation(Xs: list[np.ndarray], ys: list[tuple[int, int, int]], nois
         start_margin, end_margin = round(start * (2/3)), round((size - end )*(2/3))
         if start_margin > 4 and end_margin > 4:
 
-            for _ in range(10):
+            for _ in range(n):
                 margin_left = np.random.randint(4, start_margin)
                 margin_right = np.random.randint(4, end_margin)
                 new_Xs.append(X[start - margin_left : end + margin_right])
@@ -144,6 +143,10 @@ def upside_down(Xs, ys):
         2: 1,
         3: 4,
         4: 3,
+        5:6,
+        6:5,
+        7:8,
+        8:7
     }
     for X, y in zip(Xs, ys):
         start, end, pattern = y
@@ -180,13 +183,25 @@ def augmentation(X1, y1, X2, y2, X3, y3, X4, y4, noise=True):
     return X1, y1, X2, y2, X3, y3, X4, y4
 
 
-def augmentate(X1, y1, noise=True):
-    x_1, y_1 = data_augmentation(X1, y1, noise=noise)
+def augmentate(X1, y1, noise=True, n=1):
+    x_1, y_1 = data_augmentation(X1, y1, noise=noise, n=n)
     X_2, Y_2 = upside_down(x_1, y_1)
     X = x_1 + X_2
     y = y_1 + Y_2
 
     return X, y
+
+def prim_separation(X_train, y_train):
+    X_train_sec, y_train_sec, X_train_prim, y_train_prim = [],[],[],[]
+    for X, y in zip(X_train, y_train):
+        if y[2] > 4 :
+            X_train_sec.append(X)
+            y_train_sec.append(y)
+        else:
+            X_train_prim.append(X)
+            y_train_prim.append(y)
+    return X_train_sec, y_train_sec, X_train_prim, y_train_prim
+
 
 def get_data(synth=True):
     X1, y1, X2, y2, X3, y3, X4, y4 = get_real_X_y(noise=False, pattern_list = ["rising_wedge", "falling_wedge", "double_top", "double_bottom"])
@@ -206,9 +221,26 @@ def get_data(synth=True):
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2)
 
-    X_train, y_train = augmentate(X_train, y_train, noise=True)
-    X_test, y_test = augmentate(X_test, y_test, noise=True)
-    X_val, y_val = augmentate(X_val, y_val, noise=True)
+    X_train_sec, y_train_sec, X_train_prim, y_train_prim = prim_separation(X_train, y_train)
+    X_val_sec, y_val_sec, X_val_prim, y_val_prim = prim_separation(X_val, y_val)
+    X_test_sec, y_test_sec, X_test_prim, y_test_prim = prim_separation(X_test, y_test)
+
+    X_train_prim, y_train_prim = augmentate(X_train_prim, y_train_prim, noise=True, n=1)
+    X_test_prim, y_test_prim = augmentate(X_test_prim, y_test_prim, noise=True, n=1)
+    X_val_prim, y_val_prim = augmentate(X_val_prim, y_val_prim, noise=True, n=1)
+
+    X_train_sec, y_train_sec = augmentate(X_train_sec, y_train_sec, noise=True, n=10)
+    X_test_sec, y_test_sec = augmentate(X_test_sec, y_test_sec, noise=True, n=10)
+    X_val_sec, y_val_sec = augmentate(X_val_sec, y_val_sec, noise=True, n=10)
+
+    X_train = X_train_prim + X_train_sec
+    X_test = X_test_prim + X_test_sec
+    X_val = X_val_prim + X_val_sec
+
+    y_train = y_train_prim + y_train_sec
+    y_test = y_test_prim + y_test_sec
+    y_val = y_val_prim + y_val_sec
+
     X_train_preprocessed, y_train_p1, y_train_p2, y_train_dates = preprocess(X_train, y_train)
     X_test_preprocessed, y_test_p1, y_test_p2, y_test_dates = preprocess(X_test, y_test)
     X_val_preprocessed, y_val_p1, y_val_p2, y_val_dates = preprocess(X_val, y_val)

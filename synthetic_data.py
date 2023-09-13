@@ -268,10 +268,10 @@ def get_sec_X_y(noise=True, general=False):
             "h&s_top":86,
             "h&s_bottom":43
         }
-    X_ris_wedg, y_ris_wedg = gen_sec_x_y(l=round(amount["ascending_triangle"]*0.4), pattern="ascending_triangle", noise=noise, general=general)
-    X_fal_wedg, y_fal_wedg = gen_sec_x_y(l=round(amount["descending_triangle"]*0.4), pattern="descending_triangle", noise=noise, general=general)
-    X_d_top, y_d_top = gen_sec_x_y(l=round(amount["h&s_top":]*0.4), pattern="h&s_top", noise=noise, general=general)
-    X_d_bottom, y_d_bottom = gen_sec_x_y(l=round(amount["h&s_bottom"]*0.4), pattern="h&s_bottom", noise=noise, general=general)
+    X_ris_wedg, y_ris_wedg = gen_sec_x_y(l=round(amount["ascending_triangle"]), pattern="ascending_triangle", noise=noise, general=general)
+    X_fal_wedg, y_fal_wedg = gen_sec_x_y(l=round(amount["descending_triangle"]), pattern="descending_triangle", noise=noise, general=general)
+    X_d_top, y_d_top = gen_sec_x_y(l=round(amount["h&s_top"]), pattern="h&s_top", noise=noise, general=general)
+    X_d_bottom, y_d_bottom = gen_sec_x_y(l=round(amount["h&s_bottom"]), pattern="h&s_bottom", noise=noise, general=general)
     return X_ris_wedg, y_ris_wedg, X_fal_wedg, y_fal_wedg, X_d_top, y_d_top, X_d_bottom, y_d_bottom
 
 
