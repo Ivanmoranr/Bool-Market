@@ -4,10 +4,9 @@
 
 ## Index
 
-1 - [Mini research paper displaying everything about the approach taken](#abstract)
-2 - [Usage (How to use this repo for pattern recognition)](#usage)
-3 - [Financial information about some candle and pattern types](#financial-information)
-
+1 - [Mini research paper displaying everything about the approach taken](#abstract)<br>
+2 - [Usage (How to use this repo for pattern recognition)](#usage)<br>
+3 - [Financial information about some candle and pattern types](#financial-information)<br>
 
 
 ## Abstract
